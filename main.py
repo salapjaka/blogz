@@ -63,7 +63,7 @@ def blog():
     blog_id = int(request.args.get('id'))
     blog = Blog.query.get(blog_id)
     
-    return render_template('blog.html', blog = blog)   
+    return render_template('blog.html', blog=blog)   
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
