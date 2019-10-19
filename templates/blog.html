@@ -5,7 +5,7 @@
 <ul>
     {% for blog in blogs %}
 
-    <h2>{{ blog.name }}</h2>
+    <h2><a href="/blog?id={{blog.id}}">{{blog.name}}</h2>
         <p>{{blog.body}}</p>
     <div>
         <strong>Written By: </strong>

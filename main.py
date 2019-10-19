@@ -41,6 +41,8 @@ def require_login():
 
 @app.route("/newpost", methods=['POST', 'GET'])
 def newpost():
+    if request.method == 'GET':
+        return render_template('newpost.html')
     
     blog_name_error = ''
     blog_body_error = ''
@@ -67,15 +69,6 @@ def newpost():
 
     return render_template('newpost.html', name = "Add New Blog Post")
 
-def blog_checkoff():
-  
-    blog_id = int(request.form['blog-id'])
-    blog = Blog.query.get(blog_id)
-    blog.posted = True
-    db.session.add(blog)
-    db.session.commit()
-    return redirect('/newpost')
-
 @app.route('/blog', methods = ['POST', 'GET'])
 def blog():
     
@@ -96,14 +89,14 @@ def blog():
         return render_template("viewpost.html", blog=blog)
     else:
         blogs = Blog.query.all()
-        return render_template('blog.html', page_title="All Blog Posts!", blogs=blogs)
+        return render_template("blog.html", page_title="All Blog Posts!", blogs=blogs)
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
     # posted_blogs = Blog.query.all()
     # return render_template('index.html', posted_blogs = posted_blogs)
     users = User.query.all()
-    return render_template('index.html', users=users)
+    return render_template("index.html", users=users)
 
 @app.route("/signup", methods=['GET','POST'])
 def signup():
@@ -111,45 +104,34 @@ def signup():
     username_error = ''
     password_error = ''
     verify_error = ''
+
     if request.method == 'GET':
         return render_template("signup.html")
+
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
         verify = request.form['verify']
 #username
-    if int(len(username)) <= 0:
-        username_error = "That's not a valid username"
-        username = ''
-    else:
-        if " " in username or int(len(username)) > 20 or int(len(username)) < 3:
+        if int(len(username)) > 20 or int(len(username)) < 3:
             username_error = "That's not a valid username(value range 3-20), no spaces"
             username = ''
 #password
-    if " " in password or int(len(password)) <= 0:
-        password_error = "That's not a valid password"
-        password = ''
-    else:
         if int(len(password)) > 20 or int(len(password)) < 3:
             password_error = "That's not a valid password(value range 3-20), no spaces"
             password = ''
 #verify
-    if " " in verify or int(len(verify)) <= 0:
-        verify_error = 'The passwords do not match'
-        verify = ''
-    else:
         if password !=verify:
             verify_error = "The passwords do not match"
             verify = ''
 
-        if not username_error and not password_error and not verify_error:
-            username=str(username)
-            return render_template('signup.html', username=username, username_error=username_error,password_error=password_error,verify_error=verify_error)
+        if username_error!='' or password_error!='' or verify_error!='':
+            return render_template("signup.html", username=username, username_error=username_error,password_error=password_error, verify_error=verify_error)
         
         existing_user = User.query.filter_by(username=username).first()
         if existing_user:
             username_error = "That username already exists"
-            return render_template('signup.html', username_error=username_error)
+            return render_template("signup.html", username_error=username_error)
 
         if not existing_user:
             new_user = User(username, password)
@@ -157,8 +139,8 @@ def signup():
             db.session.commit()
             session['username'] = username
             return redirect('/newpost')
-        else:
-            return render_template('signup.html')
+    else:
+        return render_template('signup.html')
 
 @app.route("/login", methods=['GET','POST'])
 def login():
@@ -180,15 +162,15 @@ def login():
             return redirect('/newpost')
 
         if user and user.password != password:
-            password_error = "Incorrect Password"
+            password_error = "The password is incorrect"
             return render_template('login.html', password_error=password_error)
 
         if not user:
-            username_error = "Incorrect Username"
-            return render_template('login.html', username_error=username_error)
+            username_error = "This username does not exist"
+            return render_template("login.html", username_error=username_error)
 
     else:
-        return render_template('login.html')
+        return render_template("login.html")
 
 @app.route("/logout")
 def logout():
